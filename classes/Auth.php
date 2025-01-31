@@ -18,16 +18,23 @@ class Auth
 			$user->email = $email;
 			$userData = $user->getUserByEmail();
 
-			if ($userData && password_verify($password, $userData['password'])) {
-				// echo "Entered Password: " . $password . "<br>";
-				// echo "Entered Hashed Password: " . password_hash($password, PASSWORD_BCRYPT) . "<br>";
-				// echo "Stored Hashed Password: " . $userData['password'] . "<br>";
-				return $userData;
-			} 
-			// else {
-			// 	echo "User not found.<br>";
-			// }
+			if ($userData) {
+				if (strlen($userData['password']) == 32) {
+					if (md5($password) === $userData['password']) {
+						$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
+						$user->password = $hashedPassword;
+						$user->updatePassword($hashedPassword);
+						return $userData;
+					}
+				} else {
+					if (password_verify($password, $userData['password'])) {
+						return $userData;
+					}
+				}
+			}
 
+			// // If password verification fails
+			// echo 'Wrong password';
 			return false;
 		} catch (Exception $e) {
 			error_log("Auth login error: " . $e->getMessage());

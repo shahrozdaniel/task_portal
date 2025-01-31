@@ -35,9 +35,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	if (empty($errors)) {
 		try {
 			// Hash the new password before saving it
-			$user->password = password_hash($new_password, PASSWORD_DEFAULT);
+			// $user->password = password_hash($new_password, PASSWORD_DEFAULT);
+			$hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
 
-			if ($user->updatePassword()) {
+			if ($user->updatePassword($hashedPassword)) {
 				echo "<div class='alert alert-success'>Password updated successfully!</div>";
 				header("Location: dashboard.php");
 				exit;

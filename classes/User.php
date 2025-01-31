@@ -60,20 +60,21 @@ class User
 	}
 
 	// Update user password
-	public function updatePassword()
+	public function updatePassword($newPassword)
 	{
 		try {
+			if (strlen($newPassword) == 32) {
+				$newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+			}
+
 			$query = "UPDATE " . $this->table . " SET password = :password, last_password_change = NOW() WHERE id = :id";
 			$stmt = $this->conn->prepare($query);
 
-			// $this->password = password_hash($this->password, PASSWORD_BCRYPT);
-
-			$stmt->bindParam(":password", $this->password);
+			$stmt->bindParam(":password", $newPassword);
 			$stmt->bindParam(":id", $this->id);
 
 			return $stmt->execute();
 		} catch (Exception $e) {
-			// Log the error and rethrow the exception
 			error_log("Password update error: " . $e->getMessage());
 			throw new Exception("An error occurred while updating the password.");
 		}
