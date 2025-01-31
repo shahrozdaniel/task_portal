@@ -44,9 +44,10 @@ class Task
 	// Get all tasks for admin report
 	public function getAllTasks()
 	{
-		$query = "SELECT t.id, t.start_time, t.stop_time, t.notes, t.description, u.first_name, u.last_name, u.email 
-              FROM tasks t
-              LEFT JOIN users u ON t.user_id = u.id";
+		// $query = "SELECT t.id, t.start_time, t.stop_time, t.notes, t.description, u.first_name, u.last_name, u.email 
+    //           FROM tasks t
+    //           LEFT JOIN users u ON t.user_id = u.id";
+		$query = "SELECT * FROM " . $this->table;
 
 		$stmt = $this->conn->prepare($query);
 		$stmt->execute();
