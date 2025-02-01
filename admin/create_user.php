@@ -17,9 +17,11 @@ if ($db === null) {
 
 $user = new User($db);
 
+$errors = [];
+$successMessage = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	// Form validation
-	$errors = [];
 	$first_name = $_POST['first_name'] ?? '';
 	$last_name = $_POST['last_name'] ?? '';
 	$email = $_POST['email'] ?? '';
@@ -47,17 +49,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			$user->is_admin = 0;
 
 			if ($user->create()) {
-				echo "<div class='alert alert-success'>User created successfully!</div>";
+				$successMessage = "User created successfully!";
+				header("refresh:2;url=dashboard.php"); // Redirect after 2 seconds
 			} else {
-				echo "<div class='alert alert-danger'>Failed to create user.</div>";
+				$errors[] = 'Failed to create user.';
 			}
 		} catch (Exception $e) {
-			echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
-		}
-	} else {
-		// Display errors
-		foreach ($errors as $error) {
-			echo "<div class='alert alert-danger'>$error</div>";
+			$errors[] = "Error: " . $e->getMessage();
 		}
 	}
 }
@@ -71,68 +69,60 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Create User</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-	<style>
-		body {
-			background-color: #f4f7fa;
-		}
-
-		.container {
-			max-width: 600px;
-			margin-top: 30px;
-		}
-
-		.form-control {
-			border-radius: 5px;
-		}
-
-		.btn-primary {
-			width: 100%;
-			border-radius: 5px;
-			padding: 10px;
-		}
-
-		.form-check-input {
-			margin-left: 10px;
-		}
-	</style>
 </head>
 
 <body>
 	<?php include '../navbar.php'; ?>
-	<div class="container">
-		<h2>Create User</h2>
-		<form method="POST">
-			<?php if (!empty($errors)): ?>
-				<div class="alert alert-danger"><?= implode('<br>', $errors) ?></div>
-			<?php endif; ?>
+	<div class="container mt-5">
+		<h2 class="mb-4">Create User</h2>
+		<div class="card shadow-sm">
+			<div class="card-body">
+				<?php if (!empty($errors)): ?>
+					<div class="alert alert-danger">
+						<ul>
+							<?php foreach ($errors as $error): ?>
+								<li><?= htmlspecialchars($error) ?></li>
+							<?php endforeach; ?>
+						</ul>
+					</div>
+				<?php endif; ?>
 
-			<div class="mb-3">
-				<label for="first_name" class="form-label">First Name</label>
-				<input type="text" class="form-control" id="first_name" name="first_name" required>
-			</div>
-			<div class="mb-3">
-				<label for="last_name" class="form-label">Last Name</label>
-				<input type="text" class="form-control" id="last_name" name="last_name" required>
-			</div>
-			<div class="mb-3">
-				<label for="email" class="form-label">Email</label>
-				<input type="email" class="form-control" id="email" name="email" required>
-			</div>
-			<div class="mb-3">
-				<label for="phone" class="form-label">Phone</label>
-				<input type="text" class="form-control" id="phone" name="phone" required>
-			</div>
-			<div class="mb-3">
-				<label for="password" class="form-label">Password</label>
-				<input type="text" class="form-control" id="password" name="password" value="" required>
-			</div>
-			<div class="mb-3 form-check">
-				<input type="checkbox" class="form-check-input" id="generate_password" onchange="togglePasswordGeneration()">
-				<label class="form-check-label" for="generate_password">Auto-generate strong password</label>
-			</div>
+				<?php if (!empty($successMessage)): ?>
+					<div class="alert alert-success">
+						<?= htmlspecialchars($successMessage) ?>
+					</div>
+				<?php endif; ?>
 
-			<button type="submit" class="btn btn-primary">Create User</button>
-		</form>
+				<form method="POST">
+					<div class="mb-3">
+						<label for="first_name" class="form-label">First Name</label>
+						<input type="text" class="form-control" id="first_name" name="first_name" required>
+					</div>
+					<div class="mb-3">
+						<label for="last_name" class="form-label">Last Name</label>
+						<input type="text" class="form-control" id="last_name" name="last_name" required>
+					</div>
+					<div class="mb-3">
+						<label for="email" class="form-label">Email</label>
+						<input type="email" class="form-control" id="email" name="email" required>
+					</div>
+					<div class="mb-3">
+						<label for="phone" class="form-label">Phone</label>
+						<input type="text" class="form-control" id="phone" name="phone" required>
+					</div>
+					<div class="mb-3">
+						<label for="password" class="form-label">Password</label>
+						<input type="text" class="form-control" id="password" name="password" value="" required>
+					</div>
+					<div class="mb-3 form-check">
+						<input type="checkbox" class="form-check-input" id="generate_password" onchange="togglePasswordGeneration()">
+						<label class="form-check-label" for="generate_password">Auto-generate strong password</label>
+					</div>
+
+					<button type="submit" class="btn btn-primary">Create User</button>
+				</form>
+			</div>
+		</div>
 	</div>
 
 	<script>
@@ -162,6 +152,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			return password;
 		}
 	</script>
+
+	<!-- Bootstrap JS and dependencies -->
+	<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 </body>
 
 </html>
