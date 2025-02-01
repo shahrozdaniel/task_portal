@@ -7,6 +7,19 @@ if (!isset($_SESSION['user_id'])) {
 	exit;
 }
 
+// Error handling for session
+if (!isset($_SESSION['is_admin'])) {
+	$_SESSION['error_message'] = 'Session is not initialized. Please log in again.';
+	header("Location: login.php");
+	exit;
+}
+
+if ($_SESSION['is_admin']) {
+	$_SESSION['error_message'] = 'You do not have permission to access this page.';
+	header("Location: login.php");
+	exit;
+}
+
 require_once '../config/Database.php';
 
 try {

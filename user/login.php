@@ -21,27 +21,21 @@ if ($db === null) {
 }
 
 $auth = new Auth($db);
+$error_message = ''; // Initialize error message
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	// Input validation
-	$errors = [];
-	$email = $_POST['email'] ?? '';
-	$password = $_POST['password'] ?? '';
+	$email = trim($_POST['email'] ?? '');
+	$password = trim($_POST['password'] ?? '');
 
-	if (empty($email)) {
-		$errors[] = 'Email is required.';
-	}
-
-	if (empty($password)) {
-		$errors[] = 'Password is required.';
-	}
-
-	if (empty($errors)) {
+	if (empty($email) || empty($password)) {
+		$error_message = 'Please fill in all fields.';
+	} else {
 		try {
 			// Attempt login
 			$user = $auth->login($email, $password);
 
-			if ($user) {
+			if ($user && $user['is_admin'] == 0) {
 				$_SESSION['user_id'] = $user['id'];
 				$_SESSION['is_admin'] = false;
 				$_SESSION['login_timestamp'] = time(); // Save login time
@@ -55,15 +49,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 					exit;
 				}
 			} else {
-				echo "<div class='alert alert-danger'>Invalid credentials.</div>";
+				$error_message = "Invalid credentials or not a user.";
 			}
 		} catch (Exception $e) {
-			echo "<div class='alert alert-danger'>An error occurred: " . $e->getMessage() . "</div>";
-		}
-	} else {
-		// Display input validation errors
-		foreach ($errors as $error) {
-			echo "<div class='alert alert-danger'>$error</div>";
+			error_log("Login error: " . $e->getMessage());
+			$error_message = "An error occurred during login. Please try again.";
 		}
 	}
 }
@@ -119,8 +109,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		<div class="login-container">
 			<h2>User Login</h2>
 
-			<?php if (!empty($errors)): ?>
-				<div class="alert alert-danger"><?= implode('<br>', $errors) ?></div>
+			<?php if (!empty($error_message)): ?>
+				<div class="alert alert-danger"><?= htmlspecialchars($error_message) ?></div>
 			<?php endif; ?>
 
 			<form method="POST">

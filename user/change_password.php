@@ -8,6 +8,19 @@ if (!isset($_SESSION['user_id'])) {
 	exit;
 }
 
+// Error handling for session
+if (!isset($_SESSION['is_admin'])) {
+	$_SESSION['error_message'] = 'Session is not initialized. Please log in again.';
+	header("Location: login.php");
+	exit;
+}
+
+if ($_SESSION['is_admin']) {
+	$_SESSION['error_message'] = 'You do not have permission to access this page.';
+	header("Location: login.php");
+	exit;
+}
+
 $database = new Database();
 $db = $database->getConnection();
 
@@ -51,7 +64,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		try {
 			$hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
 			$user->id = $_SESSION['user_id'];
-			
+
 			if ($user->updatePassword($hashedPassword)) {
 				$_SESSION['login_timestamp'] = time(); // Reset session timestamp
 				$user->updateLastPasswordChange(); // Update last password change time
