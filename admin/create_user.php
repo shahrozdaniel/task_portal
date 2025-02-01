@@ -134,10 +134,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			if (generatePasswordCheckbox.checked) {
 				const generatedPassword = generateStrongPassword();
 				passwordField.value = generatedPassword;
-				passwordField.readOnly = false;
 			} else {
 				passwordField.value = '';
-				passwordField.readOnly = true;
 			}
 		}
 
