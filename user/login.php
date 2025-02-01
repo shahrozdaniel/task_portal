@@ -44,6 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 			if ($user) {
 				$_SESSION['user_id'] = $user['id'];
 				$_SESSION['is_admin'] = false;
+				$_SESSION['login_timestamp'] = time(); // Save login time
 
 				// Check if password change is required
 				if ($auth->needsPasswordChange($user['last_password_change'])) {

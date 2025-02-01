@@ -18,9 +18,16 @@ if ($db === null) {
 $user = new User($db);
 $user->id = $_SESSION['user_id'];
 
+// Fetch user data
+$userData = $user->getUserById($_SESSION['user_id']);
+$currentPasswordHash = $userData['password'];
+
+$errors = [];
+$successMessage = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-	$errors = [];
-	$new_password = $_POST['new_password'] ?? '';
+	$new_password = trim($_POST['new_password'] ?? '');
+	$confirm_password = trim($_POST['confirm_password'] ?? '');
 
 	// Input validation
 	if (empty($new_password)) {
@@ -31,27 +38,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 		$errors[] = 'Password must be at least 8 characters long.';
 	}
 
+	if ($new_password !== $confirm_password) {
+		$errors[] = 'Passwords do not match.';
+	}
+
+	if (password_verify($new_password, $currentPasswordHash)) {
+		$errors[] = 'New password cannot be the same as the current password.';
+	}
+
 	// If no errors, proceed with password update
 	if (empty($errors)) {
 		try {
-			// Hash the new password before saving it
-			// $user->password = password_hash($new_password, PASSWORD_DEFAULT);
 			$hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
 
 			if ($user->updatePassword($hashedPassword)) {
-				echo "<div class='alert alert-success'>Password updated successfully!</div>";
-				header("Location: dashboard.php");
-				exit;
+				$_SESSION['login_timestamp'] = time(); // Reset session timestamp
+				$user->updateLastPasswordChange(); // Update last password change time
+
+				$successMessage = "Password updated successfully!";
+				header("refresh:2;url=dashboard.php"); // Redirect after 2 seconds
 			} else {
-				echo "<div class='alert alert-danger'>Failed to update password.</div>";
+				$errors[] = 'Failed to update password.';
 			}
 		} catch (Exception $e) {
-			echo "<div class='alert alert-danger'>An error occurred: " . $e->getMessage() . "</div>";
-		}
-	} else {
-		// Display validation errors
-		foreach ($errors as $error) {
-			echo "<div class='alert alert-danger'>$error</div>";
+			error_log("Password update error: " . $e->getMessage());
+			$errors[] = "An error occurred. Please try again.";
 		}
 	}
 }
@@ -71,10 +82,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	<?php include '../navbar.php'; ?>
 	<div class="container mt-5">
 		<h2>Change Password</h2>
+
+		<?php if (!empty($errors)): ?>
+			<div class="alert alert-danger">
+				<ul>
+					<?php foreach ($errors as $error): ?>
+						<li><?= htmlspecialchars($error) ?></li>
+					<?php endforeach; ?>
+				</ul>
+			</div>
+		<?php endif; ?>
+
+		<?php if (!empty($successMessage)): ?>
+			<div class="alert alert-success"><?= htmlspecialchars($successMessage) ?></div>
+		<?php endif; ?>
+
 		<form method="POST">
 			<div class="mb-3">
 				<label for="new_password" class="form-label">New Password</label>
 				<input type="password" class="form-control" id="new_password" name="new_password" required>
+			</div>
+			<div class="mb-3">
+				<label for="confirm_password" class="form-label">Confirm Password</label>
+				<input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
 			</div>
 			<button type="submit" class="btn btn-primary">Change Password</button>
 		</form>

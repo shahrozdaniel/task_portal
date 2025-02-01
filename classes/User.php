@@ -23,11 +23,10 @@ class User
 	public function create()
 	{
 		try {
-			$query = "INSERT INTO " . $this->table . " SET first_name=:first_name, last_name=:last_name, email=:email, phone=:phone, password=:password, is_admin=:is_admin";
+			$query = "INSERT INTO " . $this->table . " 
+					  SET first_name=:first_name, last_name=:last_name, email=:email, 
+						  phone=:phone, password=:password, is_admin=:is_admin";
 			$stmt = $this->conn->prepare($query);
-
-			// $this->password = password_hash($this->password, PASSWORD_BCRYPT);
-			// echo "Hashed Password: " . $this->password . "<br>"; // Debug statement
 
 			$stmt->bindParam(":first_name", $this->first_name);
 			$stmt->bindParam(":last_name", $this->last_name);
@@ -53,8 +52,22 @@ class User
 			$stmt->execute();
 			return $stmt->fetch(PDO::FETCH_ASSOC);
 		} catch (Exception $e) {
-			// Log the error and rethrow the exception
 			error_log("User fetch error: " . $e->getMessage());
+			throw new Exception("An error occurred while fetching the user.");
+		}
+	}
+
+	// Get user by ID
+	public function getUserById($id)
+	{
+		try {
+			$query = "SELECT * FROM " . $this->table . " WHERE id = :id LIMIT 1";
+			$stmt = $this->conn->prepare($query);
+			$stmt->bindParam(":id", $id, PDO::PARAM_INT);
+			$stmt->execute();
+			return $stmt->fetch(PDO::FETCH_ASSOC);
+		} catch (Exception $e) {
+			error_log("User fetch error by ID: " . $e->getMessage());
 			throw new Exception("An error occurred while fetching the user.");
 		}
 	}
@@ -67,7 +80,9 @@ class User
 				$newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 			}
 
-			$query = "UPDATE " . $this->table . " SET password = :password, last_password_change = NOW() WHERE id = :id";
+			$query = "UPDATE " . $this->table . " 
+					  SET password = :password, last_password_change = NOW() 
+					  WHERE id = :id";
 			$stmt = $this->conn->prepare($query);
 
 			$stmt->bindParam(":password", $newPassword);
@@ -77,6 +92,20 @@ class User
 		} catch (Exception $e) {
 			error_log("Password update error: " . $e->getMessage());
 			throw new Exception("An error occurred while updating the password.");
+		}
+	}
+
+	// Update last password change timestamp
+	public function updateLastPasswordChange()
+	{
+		try {
+			$query = "UPDATE " . $this->table . " SET last_password_change = NOW() WHERE id = :id";
+			$stmt = $this->conn->prepare($query);
+			$stmt->bindParam(":id", $this->id, PDO::PARAM_INT);
+			return $stmt->execute();
+		} catch (Exception $e) {
+			error_log("Last password change update error: " . $e->getMessage());
+			throw new Exception("An error occurred while updating the last password change time.");
 		}
 	}
 }
