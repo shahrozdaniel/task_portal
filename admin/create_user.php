@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 			if ($user->create()) {
 				$successMessage = "User created successfully!";
-				header("refresh:2;url=dashboard.php"); // Redirect after 2 seconds
+				// header("refresh:2;url=dashboard.php");
 			} else {
 				$errors[] = 'Failed to create user.';
 			}
