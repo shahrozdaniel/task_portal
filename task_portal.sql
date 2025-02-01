@@ -30,8 +30,8 @@ SET time_zone = "+00:00";
 CREATE TABLE `tasks` (
   `id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
-  `start_time` datetime NOT NULL,
-  `stop_time` datetime NOT NULL,
+  `start_time` timestamp NULL,
+  `stop_time` timestamp NULL,
   `notes` text DEFAULT NULL,
   `description` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -76,13 +76,14 @@ class User
 	public function updatePassword($newPassword)
 	{
 		try {
-			if (strlen($newPassword) == 32) {
+			// Check if the password is already hashed
+			if (!password_get_info($newPassword)['algo']) {
 				$newPassword = password_hash($newPassword, PASSWORD_DEFAULT);
 			}
 
 			$query = "UPDATE " . $this->table . " 
-					  SET password = :password, last_password_change = NOW() 
-					  WHERE id = :id";
+                  SET password = :password, last_password_change = NOW() 
+                  WHERE id = :id";
 			$stmt = $this->conn->prepare($query);
 
 			$stmt->bindParam(":password", $newPassword);
@@ -94,6 +95,8 @@ class User
 			throw new Exception("An error occurred while updating the password.");
 		}
 	}
+
+
 
 	// Update last password change timestamp
 	public function updateLastPasswordChange()

@@ -1,6 +1,26 @@
 <?php
 // session_start();
 require_once __DIR__ . '/config/config.php';
+require_once __DIR__ . '/classes/Auth.php';
+require_once __DIR__ . '/config/Database.php';
+
+if (isset($_SESSION['user_id'])) {
+	$currentPage = basename($_SERVER['PHP_SELF']);
+	if ($currentPage !== 'change_password.php') {
+		$database = new Database();
+		$db = $database->getConnection();
+		$auth = new Auth($db);
+
+		$userId = $_SESSION['user_id'];
+		$user = new User($db);
+		$userData = $user->getUserById($userId);
+
+		if ($userData['is_admin'] == 0 && $auth->needsPasswordChange($userData['last_password_change'])) {
+			header("Location: " . BASE_URL . "user/change_password.php");
+			exit;
+		}
+	}
+}
 ?>
 
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">

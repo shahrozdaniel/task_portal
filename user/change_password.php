@@ -50,7 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 	if (empty($errors)) {
 		try {
 			$hashedPassword = password_hash($new_password, PASSWORD_DEFAULT);
-
+			$user->id = $_SESSION['user_id'];
+			
 			if ($user->updatePassword($hashedPassword)) {
 				$_SESSION['login_timestamp'] = time(); // Reset session timestamp
 				$user->updateLastPasswordChange(); // Update last password change time

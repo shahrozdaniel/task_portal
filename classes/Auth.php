@@ -21,9 +21,13 @@ class Auth
 			if ($userData) {
 				if (strlen($userData['password']) == 32) {
 					if (md5($password) === $userData['password']) {
+						
 						$hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 						$user->password = $hashedPassword;
+						$user->id = $userData['id'];
 						$user->updatePassword($hashedPassword);
+					} else {
+						return false;
 					}
 				} elseif (!password_verify($password, $userData['password'])) {
 					return false;
